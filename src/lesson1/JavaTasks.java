@@ -1,6 +1,11 @@
 package lesson1;
 
 import kotlin.NotImplementedError;
+import kotlin.Pair;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @SuppressWarnings("unused")
 public class JavaTasks {
@@ -34,8 +39,104 @@ public class JavaTasks {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
+
+    /*
+    *trying some complex sorting algorithm -> quick sort
+    *
+    *Complexity: O(N)(reading) + O(N*log(N))quickSort + O(N) (writing) = O(N * log(N)) - if we will be
+    *lucky enough to get the median value, then it will be nearer to O(Nlog2(N)). In the worst case quickSort will give
+    * us O(N^2) difficulty(if the recursion depth is N).
+    *
+    * Memory: O(const) for every element in timeToInt(),
+    * O(logN) for the quick sort (recursion depth is logN, and for every instance the memory required is O(const))
+    * O(N) for the input data
+    * total: O(N) of the input data, O(logN) (average for quick sort) for every recursion instance give us O(N * logN).
+    */
+
+    //returns time in seconds
+    static int timeToInt(String time) {
+        if (!time.matches("0[1-9]:[0-5][0-9]:[0-5][0-9]\\s[AP]M") &&
+        !time.matches("1[0-2]:[0-5][0-9]:[0-5][0-9]\\s[AP]M")) {
+            /*
+            * input data format:
+            * should be formatted as xx:xx:xx AM / xx:xx:xx PM
+            * no cases with 00 hours (00:xx:xx AM / 00:xx:xx PM) should be met
+            * hours [1-12], minutes [0-59], seconds [0-59], [AM-PM]
+            */
+            throw new IllegalArgumentException("illegal format: " + time);
+        }
+        int result;
+        String[] arr = time.split(" ")[0].split(":");
+
+        //getting result time in seconds: (hours*60 + minutes) * 60 + seconds
+        result = (Integer.parseInt(arr[0])*60 + Integer.parseInt(arr[1])) * 60 + Integer.parseInt(arr[2]);
+
+        if (time.charAt(9) == 'A') {
+            //interval 12:00:00 AM - 12:59:59 AM equal to 00:00:00 - 00:59:59
+            if (result >= 43200) return result % 43200; //result = 43200 and "AM" give us 12:00:00 AM -> 00:00:00
+            else return result;
+        }
+        else {
+            //interval 12:00:00 PM - 12:59:59 PM equal to 12:00:00 - 12:59:59
+            if (result >= 43200) return result; //result = 43200 and "PM" give us 12:00:00 PM -> 12:00:00
+            else return result + 43200; //adding 12 hours for the [1-11]:xx:xx PM (12) -> [13-23]:xx:xx (24)
+        }
+    }
+
+    static void timeQuickSort(ArrayList<String> input, int i, int j) {
+        if (i == j || input.isEmpty()) return;
+        System.out.println("got input sized " + input.size() + ", i = " + i + ", j = " + j);
+        for (int c = i; c <= j; c++) System.out.println(input.get(c));
+        int start = i;
+        int end = j;
+        int median = timeToInt(input.get(start)); //(trying our luck) taking the median element from the array
+        boolean iCondition = timeToInt(input.get(i)) < median;
+        boolean jCondition = timeToInt(input.get(j)) > median;
+        while (j - i > 0) { //until the "i" and "j" pointers will meet
+            iCondition = timeToInt(input.get(i)) < median;
+            jCondition = timeToInt(input.get(j)) > median;
+            if (!iCondition && !jCondition) { //found proper pair to swap, swapping
+                if (input.get(i).equals(input.get(j))) { //avoiding endless loops with changing the same elements
+                    i += 1;
+                    continue;
+                }
+                String temp = input.get(i);
+                input.set(i, input.get(j));
+                input.set(j, temp);
+            }
+            if (iCondition && i < j) i += 1;
+            if (jCondition && i < j) j -= 1;
+        }
+        //choosing where should go the element where the pointers have met
+        if (!jCondition) {
+            timeQuickSort(input, start, i - 1);
+            timeQuickSort(input, i, end);
+        }
+        else if (!iCondition) {
+            timeQuickSort(input, start, i);
+            timeQuickSort(input, i + 1, end);
+        }
+    }
+
+    //Note - taking 12:00:00 AM (12) as 0:00:00 (24), and 12:00:00 PM (12) as 12:00:00 (24)
     static public void sortTimes(String inputName, String outputName) {
-        throw new NotImplementedError();
+        //reading part
+        ArrayList<String> input = new ArrayList<>();
+        try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
+            buffIn.lines().forEach(input::add);
+            timeQuickSort(input, 0, input.size() - 1);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Input file name argument is illegal");
+        }
+        //writing part
+        try (BufferedWriter buffOut = new BufferedWriter(new FileWriter(outputName))) {
+            for (String str : input) {
+                buffOut.write(str);
+                buffOut.newLine();
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Output file name argument is illegal");
+        }
     }
 
     /**
@@ -64,8 +165,109 @@ public class JavaTasks {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
+
+    /*
+    * trying some simple sort: insertion, for example
+    * IMHO, it's quite the good decision, because on every reading iteration we can do the main insertion sort part:
+    * compare current record with the other records. Yes, it is still O(N^2), but due to the fact that we set every
+    * record on its place in the array instead of filling the array and then - sorting, it should be quite efficient.
+    * thinking about the structure like this:
+    * all
+    * |-street1
+    * | |-№1
+    * | | |-surname1
+    * | | | |-name1
+    * | | | |-name2
+    * | | |-surname2
+    * | | | |-name1
+    * ...
+    *
+    * the memory efficiency will be higher(in the best case: O(3+0.25N) if we will take the name as the 1/4 of
+    * all the data in the record),also, no additional formatting will be required while writing,
+     * but the code will be quite messed up, like:
+    * ArrayList<Pair<Street, ArrayList<Pair<Number, ArrayList<Pair<Surname, ArrayList<Names>>>>>>>,
+    * and working with all these pairs is too sad :c
+    *
+    * Complexity: O(N) reading * O(N) comparing + O(N) writing -> total: O(N^2)
+    *
+    * Memory: O(N) for the input data * O(const) for the temporary data(record, added, etc.),
+    * O(N) in the worst case for writing(if all the people will live in the same building)
+    * -> total O(N^2) in the worst case.
+    */
+
     static public void sortAddresses(String inputName, String outputName) {
-        throw new NotImplementedError();
+        //reading part
+        ArrayList<String[]> input =
+                new ArrayList<>();
+        try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
+            buffIn.lines().forEach(str -> {
+                //format: Surname Name - Street number
+                if (!str.matches("[А-Я][а-я]*\\s[А-Я][а-я]*\\s-\\s[А-Я][а-я]*\\s[0-9]+"))
+                    throw new IllegalArgumentException("oops, input format is broken for: " + str);
+
+                //record array: [Surname, Name, Street, number]
+                String[] record = str.split("\\s-?\\s?");
+                boolean added = false;
+                for(int i = 0; i < input.size(); i++) {
+                    if(record[2].compareTo(input.get(i)[2]) < 0) { //street
+                        input.add(i, record);
+                        added = true;
+                        break;
+                    }
+                    else if (Integer.parseInt(record[3]) < Integer.parseInt(input.get(i)[3])) { //number of house
+                        input.add(i, record);
+                        added = true;
+                        break;
+                    }
+                    else if(record[0].compareTo(input.get(i)[0]) < 0) { //surname
+                        input.add(i, record);
+                        added = true;
+                        break;
+                    }
+                    else if(record[1].compareTo(input.get(i)[1]) < 0) { //name
+                        input.add(i, record);
+                        added = true;
+                        break;
+                    }
+                    else if(Arrays.equals(record, input.get(i))) { //if the record are the same
+                        input.add(i, record);
+                        added = true;
+                        break;
+                    }
+                }
+                //if the record was not added, that means it should be added to the end of the array
+                if (!added) input.add(record);
+            });
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Input file name argument is illegal");
+        }
+        //writing part
+        //no worries for the order of records - everything was already sorted in the reading part,
+        //all we do here is formatting+writing
+        try (BufferedWriter buffOut = new BufferedWriter(new FileWriter(outputName))) {
+
+            String streetAndNumber = "";
+            ArrayList<String> surnameAndName = new ArrayList<>();
+
+            for (String[] record : input) {
+                //if street+number are same for the prev. record - just add surname/name
+                if ((record[2] + " " + record[3]).equals(streetAndNumber))
+                    surnameAndName.add(record[0] + " " + record[1]);
+                //else - write current buffer and fill it with new street+number
+                else {
+                    if (!streetAndNumber.isEmpty()) { //condition for getting rid of the 1st blank line
+                        buffOut.write(streetAndNumber + " - " + String.join(", ", surnameAndName));
+                        buffOut.newLine();
+                    }
+                    streetAndNumber = record[2] + " " + record[3];
+                    surnameAndName.clear();
+                    surnameAndName.add(record[1] + " " + record[2]);
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Output file name argument is illegal");
+        }
+
     }
 
     /**

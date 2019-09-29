@@ -1,11 +1,19 @@
 package lesson1;
 
+import com.jcraft.jsch.IO;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.io.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Random;
 
+import static lesson1.JavaTasks.sortTimes;
+import static lesson1.JavaTasks.timeQuickSort;
+import static lesson1.JavaTasks.timeToInt;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("WeakerAccess")
@@ -121,4 +129,80 @@ public class SortsTest {
         Sorts.quickSort(arr);
         assertArrayEquals(arr, result);
     }
+
+    //task 1
+    @Test
+    public void testTTI() {
+        String[] testStrings = {"12:00:00 AM", "12:00:00 PM", "07:15:50 PM", "00:00:01 AM", "08:10:30 AM"};
+        //0, 43200, 69350, 1, 29430
+        int[] results = {0, 43200, 69350, 1, 29430};
+        for (int j = 0; j < 5; j++) assertEquals(timeToInt(testStrings[j]), results[j]);
+    }
+
+    @Test
+    public void testQuickSort() {
+
+        ArrayList<String> testCase1 = new ArrayList<>(); //empty case
+        ArrayList<String> testSol1 = new ArrayList<>();
+        timeQuickSort(testCase1, 0, testCase1.size());
+        assertEquals(testSol1, testCase1);
+
+        String[] testCaseBuilder2 = {"12:00:00 PM", "11:59:59 PM", "12:00:00 AM", "11:59:59 AM", "08:11:17 AM"}; //12:00:00 AM/PM case
+        ArrayList<String> testCase2 = new ArrayList<>(Arrays.asList(testCaseBuilder2));
+        timeQuickSort(testCase2, 0, testCase2.size() -1);
+        String[] testSolBuilder2 = {"12:00:00 AM", "08:11:17 AM", "11:59:59 AM", "12:00:00 PM", "11:59:59 PM"};
+        ArrayList<String> testSol2 = new ArrayList<>(Arrays.asList(testSolBuilder2));
+        assertEquals(testSol2, testCase2);
+
+        String[] testCaseBuilder3 = {"11:11:11 AM", "11:11:11 AM", "08:11:22 AM"}; //duplicating elements case
+        ArrayList<String> testCase3 = new ArrayList<>(Arrays.asList(testCaseBuilder3));
+        timeQuickSort(testCase3, 0, testCase3.size() - 1);
+        String[] testSolBuilder3 = {"08:11:22 AM", "11:11:11 AM", "11:11:11 AM"};
+        ArrayList<String> testSol3 = new ArrayList<>(Arrays.asList(testSolBuilder3));
+        assertEquals(testSol3, testCase3);
+
+        String[] testCaseBuilder4 = {"11:20:30 AM", "00:20:30 PM"}; //incorrect input: 00:xx:xx case
+        ArrayList<String> testCase4 = new ArrayList<>(Arrays.asList(testCaseBuilder4));
+        assertThrows(IllegalArgumentException.class, () -> timeQuickSort(testCase4, 0, testCase4.size() - 1));
+
+        String[] testCaseBuilder5 = {"12:22:21 PM", "2:30:50 AM"}; //incorrect input: time format error case
+        ArrayList<String> testCase5 = new ArrayList<>(Arrays.asList(testCaseBuilder5));
+        assertThrows(IllegalArgumentException.class, () -> timeQuickSort(testCase5, 0, testCase5.size() - 1));
+
+        String[] testCaseBuilder6 = //some more tests
+                {"12:22:21 PM", "12:30:50 AM", "08:19:50 PM", "12:11:49 PM", "01:30:50 AM", "12:22:21 PM",
+                        "04:32:58 AM", "09:31:11 AM", "05:18:47 PM", "11:50:20 PM", "05:22:19 AM", "03:21:43 PM"};
+        ArrayList<String> testCase6 = new ArrayList<>(Arrays.asList(testCaseBuilder6));
+        timeQuickSort(testCase6, 0, testCase6.size() - 1);
+        String[] testSolBuilder6 = {"12:30:50 AM", "01:30:50 AM", "04:32:58 AM", "05:22:19 AM", "09:31:11 AM",
+                "12:11:49 PM", "12:22:21 PM", "12:22:21 PM", "03:21:43 PM", "05:18:47 PM", "08:19:50 PM", "11:50:20 PM"};
+        ArrayList<String> testSol6 = new ArrayList<>(Arrays.asList(testSolBuilder6));
+        assertEquals(testSol6, testCase6);
+    }
+
+    //all the sorting logic is already tested in testQuickSort(); testing reading/writing part
+    @Test
+    public void testSortTimes() {
+        //Too lazy, taking the input/output data from the last test :c
+        //TODO: fix the stuff with the test file access
+        sortTimes("time_in_test.txt", "time_out_test.txt");
+
+        ArrayList<String> result = new ArrayList<>();
+        try(BufferedReader buffIn = new BufferedReader(new FileReader("time_out_test.txt"))) {
+            buffIn.lines().forEach(result::add);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String[] testSolBuilder = {"12:30:50 AM", "01:30:50 AM", "04:32:58 AM", "05:22:19 AM", "09:31:11 AM",
+                "12:11:49 PM", "12:22:21 PM", "12:22:21 PM", "03:21:43 PM", "05:18:47 PM", "08:19:50 PM", "11:50:20 PM"};
+        ArrayList<String> testSol = new ArrayList<>(Arrays.asList(testSolBuilder));
+        assertEquals(testSol, result);
+    }
+
+    @Test
+    public void testSortAddresses() {
+        //TODO: some goddamn tests
+    }
+
 }
