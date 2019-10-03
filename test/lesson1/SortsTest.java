@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Random;
 
-import static lesson1.JavaTasks.sortTimes;
-import static lesson1.JavaTasks.timeQuickSort;
-import static lesson1.JavaTasks.timeToInt;
+import static lesson1.JavaTasks.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("WeakerAccess")
@@ -181,28 +181,79 @@ public class SortsTest {
     }
 
     //all the sorting logic is already tested in testQuickSort(); testing reading/writing part
+
+    private boolean fileEqualityTest(Path tmp, Path out) {
+        File tmpOut = new File(tmp.toString());
+        ArrayList<String> tmpArr = new ArrayList<>();
+        ArrayList<String> outArr = new ArrayList<>();
+        try(BufferedReader buffTmp = new BufferedReader(new FileReader(tmp.toString()));
+            BufferedReader buffOut = new BufferedReader(new FileReader(out.toString()))) {
+            //yep, writing both the ideal result and the output in arrays is surely not the best solution, but
+            //I have no clue how can I compare them using streams and forEach()
+
+            buffTmp.lines().forEach(tmpArr::add);
+            buffOut.lines().forEach(outArr::add);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(tmpOut.delete());
+        return tmpArr.equals(outArr);
+    }
+
     @Test
     public void testSortTimes() {
         //Too lazy, taking the input/output data from the last test :c
         //TODO: fix the stuff with the test file access
-        sortTimes("time_in_test.txt", "time_out_test.txt");
+        Path tmp = Paths.get("test", "lesson1", "tmp.txt");
 
-        ArrayList<String> result = new ArrayList<>();
-        try(BufferedReader buffIn = new BufferedReader(new FileReader("time_out_test.txt"))) {
-            buffIn.lines().forEach(result::add);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        String[] testSolBuilder = {"12:30:50 AM", "01:30:50 AM", "04:32:58 AM", "05:22:19 AM", "09:31:11 AM",
-                "12:11:49 PM", "12:22:21 PM", "12:22:21 PM", "03:21:43 PM", "05:18:47 PM", "08:19:50 PM", "11:50:20 PM"};
-        ArrayList<String> testSol = new ArrayList<>(Arrays.asList(testSolBuilder));
-        assertEquals(testSol, result);
+        Path in = Paths.get("test", "lesson1", "time_in_test.txt");
+        Path out = Paths.get("test", "lesson1", "time_out_test.txt");
+        sortTimes(in.toString(), tmp.toString());
+        assertTrue(fileEqualityTest(tmp, out));
     }
+
+
 
     @Test
     public void testSortAddresses() {
-        //TODO: some goddamn tests
+        Path tmp = Paths.get("test", "lesson1", "tmp.txt");
+
+        Path in = Paths.get("test", "lesson1", "addrIn.txt");
+        Path out = Paths.get("test", "lesson1", "addrOut.txt");
+        sortAddresses(in.toString(), tmp.toString()); //empty case testing
+        assertTrue(fileEqualityTest(tmp, out));
+
+        in = Paths.get("test", "lesson1", "addrIn1.txt");
+        out = Paths.get("test", "lesson1", "addrOut1.txt");
+        sortAddresses(in.toString(), tmp.toString()); //"ё" case testing
+        assertTrue(fileEqualityTest(tmp, out));
+
+        in = Paths.get("test", "lesson1", "addrIn2.txt");
+        out = Paths.get("test", "lesson1", "addrOut2.txt");
+        sortAddresses(in.toString(), tmp.toString()); //duplicating elements case testing
+        assertTrue(fileEqualityTest(tmp, out));
+
+        Path finalIn = Paths.get("test", "lesson1", "addrIn3.txt"); //incorrect format case testing
+        assertThrows(IllegalArgumentException.class, () -> sortAddresses(finalIn.toString(), tmp.toString()));
+
     }
 
+    @Test
+    public void testSortTemperatures() {
+        Path tmp = Paths.get("test", "lesson1", "tmp.txt");
+
+        Path in = Paths.get("test", "lesson1", "tempIn.txt");
+        Path out = Paths.get("test", "lesson1", "tempOut.txt");
+        sortTemperatures(in.toString(), tmp.toString()); //empty case testing
+        assertTrue(fileEqualityTest(tmp, out));
+
+        in = Paths.get("test", "lesson1", "tempIn1.txt");
+        out = Paths.get("test", "lesson1", "tempOut1.txt");
+        sortTemperatures(in.toString(), tmp.toString()); //duplicating elements case testing
+        assertTrue(fileEqualityTest(tmp, out));
+
+        Path finalIn = Paths.get("test", "lesson1", "tempIn2.txt"); //incorrect format case testing
+        assertThrows(IllegalArgumentException.class, () -> sortTemperatures(finalIn.toString(), tmp.toString()));
+    }
 }

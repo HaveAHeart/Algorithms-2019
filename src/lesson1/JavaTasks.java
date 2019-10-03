@@ -45,12 +45,12 @@ public class JavaTasks {
     *
     *Complexity: O(N)(reading) + O(N*log(N))quickSort + O(N) (writing) = O(N * log(N)) - if we will be
     *lucky enough to get the median value, then it will be nearer to O(Nlog2(N)). In the worst case quickSort will give
-    * us O(N^2) difficulty(if the recursion depth is N).
+    * us O(N^2) difficulty(if the recursion depth will be N).
     *
     * Memory: O(const) for every element in timeToInt(),
     * O(logN) for the quick sort (recursion depth is logN, and for every instance the memory required is O(const))
     * O(N) for the input data
-    * total: O(N) of the input data, O(logN) (average for quick sort) for every recursion instance give us O(N * logN).
+    * total: O(N) of the input data, O(logN) (average for quick sort) for every recursion instance give us O(N).
     */
 
     //returns time in seconds
@@ -112,7 +112,7 @@ public class JavaTasks {
             timeQuickSort(input, start, i - 1);
             timeQuickSort(input, i, end);
         }
-        else if (!iCondition) {
+        else {
             timeQuickSort(input, start, i);
             timeQuickSort(input, i + 1, end);
         }
@@ -189,47 +189,61 @@ public class JavaTasks {
     * and working with all these pairs is too sad :c
     *
     * Complexity: O(N) reading * O(N) comparing + O(N) writing -> total: O(N^2)
+    * amount of operations(worst case) for the elements ->
+    * 2(write to input + write to output - 1st el) + 2(compare + write to input + write to output- 2nd el) + ... + N+1
+    * sum(2, 3, ..., N+1) = ((3 + N)/2)*N = (3N + N^2)/2 -> O(N^2) complexity
     *
     * Memory: O(N) for the input data * O(const) for the temporary data(record, added, etc.),
     * O(N) in the worst case for writing(if all the people will live in the same building)
-    * -> total O(N^2) in the worst case.
+    * -> total O(N) memory
     */
+
 
     static public void sortAddresses(String inputName, String outputName) {
         //reading part
-        ArrayList<String[]> input =
-                new ArrayList<>();
+        ArrayList<String[]> input = new ArrayList<>();
         try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
             buffIn.lines().forEach(str -> {
                 //format: Surname Name - Street number
-                if (!str.matches("[А-Я][а-я]*\\s[А-Я][а-я]*\\s-\\s[А-Я][а-я]*\\s[0-9]+"))
+                if (!str.matches("[А-ЯЁ][а-яё]*\\s[А-ЯЁ][а-яё]*\\s-\\s[А-ЯЁ][а-яё]*\\s[1-9][0-9]*"))
                     throw new IllegalArgumentException("oops, input format is broken for: " + str);
 
-                //record array: [Surname, Name, Street, number]
+                //for every record - array: [Surname, Name, Street, number]
                 String[] record = str.split("\\s-?\\s?");
                 boolean added = false;
                 for(int i = 0; i < input.size(); i++) {
-                    if(record[2].compareTo(input.get(i)[2]) < 0) { //street
+                    //it is better to place all the comparisons before the if|else part, or the code will be messy
+                    int streetComp = record[2].compareTo(input.get(i)[2]); //street comparison
+                    int numComp = Integer.parseInt(record[3]) - Integer.parseInt(input.get(i)[3]); //number comparison
+                    int surnameComp = record[0].compareTo(input.get(i)[0]); //surname comparison
+                    int nameComp = record[1].compareTo(input.get(i)[1]); //name comparison
+
+                    if(streetComp < 0) { //street
                         input.add(i, record);
                         added = true;
                         break;
                     }
-                    else if (Integer.parseInt(record[3]) < Integer.parseInt(input.get(i)[3])) { //number of house
+                    else if (numComp < 0 && streetComp == 0) { //number of house
+                        System.out.println("Number " + record[3] + "lower then " + input.get(i)[3]);
                         input.add(i, record);
                         added = true;
                         break;
                     }
-                    else if(record[0].compareTo(input.get(i)[0]) < 0) { //surname
+                    else if(surnameComp < 0 && streetComp == 0 && numComp == 0) { //surname
+                        System.out.println("Surname " + record[0] + "lower then " + input.get(i)[0]);
                         input.add(i, record);
                         added = true;
                         break;
                     }
-                    else if(record[1].compareTo(input.get(i)[1]) < 0) { //name
+                    else if(nameComp < 0 && streetComp == 0  && numComp == 0 && surnameComp == 0) { //name
+                        System.out.println("Name " + record[1] + "lower then " + input.get(i)[1]);
                         input.add(i, record);
                         added = true;
                         break;
                     }
                     else if(Arrays.equals(record, input.get(i))) { //if the record are the same
+                        System.out.println("Record " + String.join(",", record) +
+                                "equal to " + String.join(",", input.get(i)));
                         input.add(i, record);
                         added = true;
                         break;
@@ -238,6 +252,7 @@ public class JavaTasks {
                 //if the record was not added, that means it should be added to the end of the array
                 if (!added) input.add(record);
             });
+            input.forEach(str -> System.out.println(String.join(";" ,str)));
         } catch (IOException e) {
             throw new IllegalArgumentException("Input file name argument is illegal");
         }
@@ -250,20 +265,27 @@ public class JavaTasks {
             ArrayList<String> surnameAndName = new ArrayList<>();
 
             for (String[] record : input) {
-                //if street+number are same for the prev. record - just add surname/name
+                //if street+number are same for the previous record - just add surname/name
                 if ((record[2] + " " + record[3]).equals(streetAndNumber))
                     surnameAndName.add(record[0] + " " + record[1]);
                 //else - write current buffer and fill it with new street+number
                 else {
                     if (!streetAndNumber.isEmpty()) { //condition for getting rid of the 1st blank line
+                        System.out.println("writing: " + streetAndNumber + ", " + surnameAndName);
                         buffOut.write(streetAndNumber + " - " + String.join(", ", surnameAndName));
                         buffOut.newLine();
                     }
                     streetAndNumber = record[2] + " " + record[3];
                     surnameAndName.clear();
-                    surnameAndName.add(record[1] + " " + record[2]);
+                    surnameAndName.add(record[0] + " " + record[1]);
+                    System.out.println("Current st&num: " + streetAndNumber +
+                            ", sn&n: " + String.join(",", surnameAndName));
                 }
             }
+            //out of loop to get rid of the empty line at the end
+            if (!streetAndNumber.isEmpty())
+                buffOut.write(streetAndNumber + " - " + String.join(", ", surnameAndName));
+
         } catch (IOException e) {
             throw new IllegalArgumentException("Output file name argument is illegal");
         }
@@ -300,8 +322,78 @@ public class JavaTasks {
      * 99.5
      * 121.3
      */
+
+    /*quickSort time, i guess
+    * Complexity: O(N) - reading, O(NlogN) - sorting, O(N) - writing
+    * total -> O(NlogN), base of log(N) depends on the chosen median element
+    *
+    * Memory: O(N) - reading, O(logN) - recursion needs - log base depends on the median element chosen, O(1) - writing
+    * Total -> O(N) memory
+    */
+
+    private static void temperatureQuickSort(ArrayList<Double> input, int i, int j) {
+        if (i == j || input.isEmpty()) return;
+        System.out.println("got input sized " + input.size() + ", i = " + i + ", j = " + j);
+        for (int c = i; c <= j; c++) System.out.println(input.get(c));
+        int start = i;
+        int end = j;
+        double median = input.get(start); //(trying our luck) taking the median element from the array
+        boolean iCondition = input.get(i) < median;
+        boolean jCondition = input.get(j) > median;
+        while (j - i > 0) { //until the "i" and "j" pointers will meet
+            iCondition = input.get(i) < median;
+            jCondition = input.get(j) > median;
+            if (!iCondition && !jCondition) { //found proper pair to swap, swapping
+                if (input.get(i).equals(input.get(j))) { //avoiding endless loops with changing the same elements
+                    i += 1;
+                    continue;
+                }
+                Double temp = input.get(i);
+                input.set(i, input.get(j));
+                input.set(j, temp);
+            }
+            if (iCondition && i < j) i += 1;
+            if (jCondition && i < j) j -= 1;
+        }
+        //choosing where should go the element where the pointers have met
+        if (!jCondition) {
+            temperatureQuickSort(input, start, i - 1);
+            temperatureQuickSort(input, i, end);
+        }
+        else {
+            temperatureQuickSort(input, start, i);
+            temperatureQuickSort(input, i + 1, end);
+        }
+    }
+
     static public void sortTemperatures(String inputName, String outputName) {
-        throw new NotImplementedError();
+        ArrayList<Double> input = new ArrayList<>();
+        //reading part
+        try(BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
+
+            buffIn.lines().forEach(str -> {
+                if (!str.matches("-?[0-9]+\\.[0-9]")) //format: [-]xxxxx.x
+                    throw new IllegalArgumentException("oops, incorrect input format for " + str);
+                input.add(Double.parseDouble(str));
+            });
+
+        } catch (IOException e) {
+            System.out.println("Oops, looks like the input file can not be accessed");
+        }
+
+        temperatureQuickSort(input, 0, input.size() - 1);
+
+        //writing part
+        try(BufferedWriter buffOut = new BufferedWriter(new FileWriter(outputName))) {
+
+            for(Double number : input) {
+                buffOut.write(number.toString());
+                buffOut.newLine();
+            }
+
+        } catch (IOException e) {
+            System.out.println("Oops, looks like the output file can not be accessed");
+        }
     }
 
     /**
