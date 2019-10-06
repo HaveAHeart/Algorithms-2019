@@ -205,7 +205,7 @@ public class JavaTasks {
         try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
             buffIn.lines().forEach(str -> {
                 //format: Surname Name - Street number
-                if (!str.matches("[А-ЯЁ][а-яё]*\\s[А-ЯЁ][а-яё]*\\s-\\s[А-ЯЁ][а-яё]*\\s[1-9][0-9]*"))
+                if (!str.matches("[А-ЯЁ][а-яё\\-]*\\s[А-ЯЁ][а-яё\\-]*\\s-\\s[А-ЯЁ][а-яё\\-]*\\s[1-9][0-9]*"))
                     throw new IllegalArgumentException("oops, input format is broken for: " + str);
 
                 //for every record - array: [Surname, Name, Street, number]
@@ -271,15 +271,12 @@ public class JavaTasks {
                 //else - write current buffer and fill it with new street+number
                 else {
                     if (!streetAndNumber.isEmpty()) { //condition for getting rid of the 1st blank line
-                        System.out.println("writing: " + streetAndNumber + ", " + surnameAndName);
                         buffOut.write(streetAndNumber + " - " + String.join(", ", surnameAndName));
                         buffOut.newLine();
                     }
                     streetAndNumber = record[2] + " " + record[3];
                     surnameAndName.clear();
                     surnameAndName.add(record[0] + " " + record[1]);
-                    System.out.println("Current st&num: " + streetAndNumber +
-                            ", sn&n: " + String.join(",", surnameAndName));
                 }
             }
             //out of loop to get rid of the empty line at the end

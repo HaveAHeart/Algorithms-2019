@@ -133,7 +133,7 @@ public class SortsTest {
     //task 1
     @Test
     public void testTTI() {
-        String[] testStrings = {"12:00:00 AM", "12:00:00 PM", "07:15:50 PM", "00:00:01 AM", "08:10:30 AM"};
+        String[] testStrings = {"12:00:00 AM", "12:00:00 PM", "07:15:50 PM", "12:00:01 AM", "08:10:30 AM"};
         //0, 43200, 69350, 1, 29430
         int[] results = {0, 43200, 69350, 1, 29430};
         for (int j = 0; j < 5; j++) assertEquals(timeToInt(testStrings[j]), results[j]);
@@ -212,8 +212,6 @@ public class SortsTest {
         sortTimes(in.toString(), tmp.toString());
         assertTrue(fileEqualityTest(tmp, out));
     }
-
-
 
     @Test
     public void testSortAddresses() {
