@@ -3,7 +3,9 @@ package lesson2;
 import kotlin.NotImplementedError;
 import kotlin.Pair;
 
-import java.util.Set;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
@@ -31,7 +33,7 @@ public class JavaAlgorithms {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) {
+    static public kotlin.Pair<Integer, Integer> optimizeBuyAndSell(String inputName) {
         throw new NotImplementedError();
     }
 
@@ -99,8 +101,60 @@ public class JavaAlgorithms {
      * Если имеется несколько самых длинных общих подстрок одной длины,
      * вернуть ту из них, которая встречается раньше в строке first.
      */
-    static public String longestCommonSubstring(String firs, String second) {
-        throw new NotImplementedError();
+
+    /*
+    * Main idea - to build some sort of matrix with the cells filled with the common substring lengths using diagonals
+    * abcdcf, cde:
+    *   abcdcf
+    * a 100000
+    * b 020000
+    * c 003010
+    *
+    * the main thing we need to do here - for every (i, j) element, set it to 0 if the first[i] != second[j], else
+    * take the (i - 1, j - 1) element, increase it by 1 and write the value to the (i, j) element.
+    * The biggest value will be in the (maxI, maxJ) element -> first[maxI] = second[maxJ] will be the end of
+    * the common substring.
+    *
+    *
+    * Complexity: O(N^2) (or is it better to say O(N*M)?) for filling the N * M matrix,
+    * O(const) for taking the longest substring (but it still depends on the size of the substring,
+    * not on the length of the strings given)
+    * total -> O(N^2)
+    *
+    * Memory: O(const) for maxLength, its indexes and for the maxStr,
+    * O(N^2) for the matrix
+    * total -> O(N^2)
+    */
+
+    static public String longestCommonSubstring(String first, String second) {
+        StringBuilder maxStr = new StringBuilder();
+        int maxFirst = -1;
+        int maxSecond = -1;
+        int maxLength = 0;
+        int[][] matrix = new int[first.length()][second.length()];
+        //filling the matrix + looking for the max number - O(N^2)
+        for (int i = 0; i < first.length(); i++) {
+            for (int j = 0; j < second.length(); j++) {
+                if (first.charAt(i) == second.charAt(j)) {
+                    if (i == 0 || j == 0) matrix[i][j] = 1;
+                    else matrix[i][j] = matrix[i - 1][j - 1] + 1;
+                    if(matrix[i][j] > maxLength) {
+                        maxFirst = i;
+                        maxLength = matrix[i][j];
+                    }
+                }
+                else {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        //getting our string
+        if (maxFirst == -1) return "";
+        else {
+            char[] maxStrAsChars = new char[maxLength];
+            for (int i = maxFirst - maxLength + 1; i <= maxFirst; i++) maxStr.append(first.charAt(i));
+            return maxStr.toString();
+        }
     }
 
     /**
@@ -113,8 +167,43 @@ public class JavaAlgorithms {
      * Справка: простым считается число, которое делится нацело только на 1 и на себя.
      * Единица простым числом не считается.
      */
+
+    /*
+    * Sieve of Eratosthenes algorithm
+    * get off all the numbers that can be divided on this number
+    * repeat -> profit
+    * but for the big N numbers the memory amount can be quite big, so, one of the options is to divide
+    * the 1..N interval to, for example, to the 1..sqrt(n), sqrt(n)+1 .. N intervals, while the complexity
+    * will be nearly the same
+    * also, we can take only odd numbers, because 2 is the first prime number
+    *
+    * Complexity: O(N*Log(Log(N))) for the sieve of Eratosthenes * O(N) ArrayList element removal difficulty
+    * -> O(N^2 * Log(Log(N)))
+    *
+    * Memory: throwing away all the cases when they are divided by 2,3 or 5:  7.11.13..N interval -> O(N) memory
+    */
+
     static public int calcPrimesNumber(int limit) {
-        throw new NotImplementedError();
+        if (limit <= 1) return 0;
+        if (limit == 2) return 1;
+        if (limit < 5) return 2;
+        if (limit == 5) return 3;
+        int primeNumbers = 3; //2, 3, 5 are prime , 6 % 2 = 0, starting from 7
+        int currNum;
+        ArrayList<Integer> numbers = new ArrayList<>();
+        ArrayList<Integer> removeNums = new ArrayList<>();
+        for (int i = 7; i <= limit; i+= 2) //%2 check
+            if (!(i % 5 == 0) && !(i % 3 == 0)) numbers.add(i); //%3/%5 checks
+        while (numbers.size() > 0) {
+            if (numbers.get(numbers.size() - 1) < 2 * numbers.get(0)) return primeNumbers + numbers.size();
+            currNum = numbers.get(0);
+            primeNumbers++;
+            for (Integer number : numbers) if (number % currNum == 0) removeNums.add(number);
+            for (Integer removeNum : removeNums) numbers.remove(removeNum);
+            removeNums.clear();
+            System.out.println("numbers size: " + numbers.size() + ", pr is " + primeNumbers );
+        }
+        return primeNumbers;
     }
 
     /**
@@ -143,7 +232,86 @@ public class JavaAlgorithms {
      * В файле буквы разделены пробелами, строки -- переносами строк.
      * Остальные символы ни в файле, ни в словах не допускаются.
      */
+
+    /*
+    * Complexity: O(N^2) for checking every letter in the field * O(N) for checking every word at every field cell ->
+    * Total O(N^3)
+    *
+    * Memory: O(N^2) for the field, O(N) for the resulting set , O(const) for some constant values in the recursion->
+    * Total O(N^2)
+    */
+    private static class Pair {
+        int i;
+        int j;
+        Pair(int iIn, int jIn) {
+            i = iIn;
+            j = jIn;
+        }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Pair pair = (Pair) o;
+            return i == pair.i &&
+                    j == pair.j;
+        }
+
+    }
+
+    private static boolean wordFinder(String word, ArrayList<String[]> field,
+                                      int i, int j, int iSize, int jSize, ArrayList<Pair> used) {
+
+        String currLetter = Character.toString(word.charAt(0));
+        if (!field.get(i)[j].equals(currLetter)) return false;
+        if (word.length() == 1) return true;
+
+        word = word.substring(1);
+        boolean result = false;
+        Pair[] variants = {new Pair(i - 1, j), new Pair(i + 1, j), new Pair(i, j - 1), new Pair(i, j + 1)};
+
+        for (Pair pair : variants) {
+            if (!used.contains(pair) && (pair.i >= 0) && (pair.j >= 0) && (pair.i <= iSize - 1) && (pair.j <= jSize - 1)) {
+                used.add(pair);
+                if (wordFinder(word, field, pair.i, pair.j, iSize, jSize, used)) {
+                    result = true;
+                    break;
+                }
+                used.remove(pair);
+            }
+        }
+        return result;
+    }
+
     static public Set<String> baldaSearcher(String inputName, Set<String> words) {
-        throw new NotImplementedError();
+        ArrayList<String[]> field = new ArrayList<>();
+        HashSet<String> result = new HashSet<>();
+        //reading part
+        try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
+            buffIn.lines().forEach(str -> {
+                if (!str.matches("([A-ZА-ЯЁ]\\s)*[A-ZА-ЯЁ]"))
+                    throw new IllegalArgumentException("string format is broken for " + str);
+
+                String[] parsedStr = str.split(" ");
+                if (field.isEmpty()) field.add(parsedStr);
+                else if (parsedStr.length == field.get(field.size() - 1).length) field.add(parsedStr);
+                else throw new IllegalArgumentException("string format is broken for " + str);
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int iSize = field.size();
+        int jSize = field.get(0).length;
+
+        for (int i = 0; i < iSize; i++) {
+            for (int j = 0; j < jSize; j++) {
+                for (String word : words) {
+                    if (wordFinder(word, field, i, j, iSize, jSize, new ArrayList<>())) {
+                        result.add(word);
+                    }
+                }
+            }
+        }
+        return result;
     }
 }
