@@ -320,9 +320,9 @@ public class JavaTasks {
      * 121.3
      */
 
-    /*quickSort time, i guess
+    /*quickSort time!
     * Complexity: O(N) - reading, O(NlogN) - sorting, O(N) - writing
-    * total -> O(NlogN), base of log(N) depends on the chosen median element
+    * total -> O(N*logN), base of log(N) depends on the chosen median element
     *
     * Memory: O(N) - reading, O(logN) - recursion needs - log base depends on the median element chosen, O(1) - writing
     * Total -> O(N) memory
