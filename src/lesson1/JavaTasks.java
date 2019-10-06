@@ -205,7 +205,7 @@ public class JavaTasks {
         try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
             buffIn.lines().forEach(str -> {
                 //format: Surname Name - Street number
-                if (!str.matches("[А-ЯЁ][а-яё\\-]*\\s[А-ЯЁ][а-яё\\-]*\\s-\\s[А-ЯЁ][а-яё\\-]*\\s[1-9][0-9]*"))
+                if (!str.matches("[А-ЯЁа-яё\\-]*\\s[А-ЯЁа-яё\\-]*\\s-\\s[А-ЯЁа-яё\\-]*\\s[1-9][0-9]*"))
                     throw new IllegalArgumentException("oops, input format is broken for: " + str);
 
                 //for every record - array: [Surname, Name, Street, number]
