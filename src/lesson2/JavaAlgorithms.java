@@ -7,6 +7,8 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
+import static java.lang.Math.sqrt;
+
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
     /**
@@ -169,41 +171,30 @@ public class JavaAlgorithms {
      */
 
     /*
-    * Sieve of Eratosthenes algorithm
-    * get off all the numbers that can be divided on this number
-    * repeat -> profit
-    * but for the big N numbers the memory amount can be quite big, so, one of the options is to divide
-    * the 1..N interval to, for example, to the 1..sqrt(n), sqrt(n)+1 .. N intervals, while the complexity
-    * will be nearly the same
-    * also, we can take only odd numbers, because 2 is the first prime number
-    *
-    * Complexity: O(N*Log(Log(N))) for the sieve of Eratosthenes * O(N) ArrayList element removal difficulty
-    * -> O(N^2 * Log(Log(N)))
-    *
-    * Memory: throwing away all the cases when they are divided by 2,3 or 5:  7.11.13..N interval -> O(N) memory
-    */
+     * previous time out was due to the Sieve of Eratosthenes algorithm usage, as if I needed not the amount of the
+     * prime numbers but something like the array with the prime numbers from 1 to limit :C
+     *
+     *
+     * Complexity: O(N) for the i-loop, O(sqrt(N)) for the j-loop, total ->
+     * O(N*sqrt(N))
+     *
+     * Memory: O(const) for holding the values we need - limit, i, j, primes, isPrime
+     */
 
     static public int calcPrimesNumber(int limit) {
         if (limit <= 1) return 0;
         if (limit == 2) return 1;
-        if (limit < 5) return 2;
-        if (limit == 5) return 3;
-        int primeNumbers = 3; //2, 3, 5 are prime , 6 % 2 = 0, starting from 7
-        int currNum;
-        ArrayList<Integer> numbers = new ArrayList<>();
-        ArrayList<Integer> removeNums = new ArrayList<>();
-        for (int i = 7; i <= limit; i+= 2) //%2 check
-            if (!(i % 5 == 0) && !(i % 3 == 0)) numbers.add(i); //%3/%5 checks
-        while (numbers.size() > 0) {
-            if (numbers.get(numbers.size() - 1) < 2 * numbers.get(0)) return primeNumbers + numbers.size();
-            currNum = numbers.get(0);
-            primeNumbers++;
-            for (Integer number : numbers) if (number % currNum == 0) removeNums.add(number);
-            for (Integer removeNum : removeNums) numbers.remove(removeNum);
-            removeNums.clear();
-            System.out.println("numbers size: " + numbers.size() + ", pr is " + primeNumbers );
+
+        int primes = 1;
+        for (int i = 3; i <= limit; i+= 2) {
+            boolean isPrime = true;
+            for (int j = 2; j <= sqrt(i); j++) if (i % j == 0) {
+                isPrime = false;
+                break;
+            }
+            if (isPrime) primes += 1;
         }
-        return primeNumbers;
+        return primes;
     }
 
     /**
