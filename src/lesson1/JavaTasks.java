@@ -6,6 +6,10 @@ import kotlin.Pair;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+
+import static java.lang.Math.abs;
+import static lesson1.Sorts.countingSort;
 
 @SuppressWarnings("unused")
 public class JavaTasks {
@@ -70,16 +74,17 @@ public class JavaTasks {
 
         //getting result time in seconds: (hours*60 + minutes) * 60 + seconds
         result = (Integer.parseInt(arr[0])*60 + Integer.parseInt(arr[1])) * 60 + Integer.parseInt(arr[2]);
+        final int twelveHours = 43200;
 
         if (time.charAt(9) == 'A') {
             //interval 12:00:00 AM - 12:59:59 AM equal to 00:00:00 - 00:59:59
-            if (result >= 43200) return result % 43200; //result = 43200 and "AM" give us 12:00:00 AM -> 00:00:00
+            if (result >= twelveHours) return result % twelveHours; //12:00:00 AM -> 00:00:00
             else return result;
         }
         else {
             //interval 12:00:00 PM - 12:59:59 PM equal to 12:00:00 - 12:59:59
-            if (result >= 43200) return result; //result = 43200 and "PM" give us 12:00:00 PM -> 12:00:00
-            else return result + 43200; //adding 12 hours for the [1-11]:xx:xx PM (12) -> [13-23]:xx:xx (24)
+            if (result >= twelveHours) return result; //12:00:00 PM -> 12:00:00
+            else return result + twelveHours; //adding 12 hours for the [1-11]:xx:xx PM (12) -> [13-23]:xx:xx (24)
         }
     }
 
@@ -104,8 +109,8 @@ public class JavaTasks {
                 input.set(i, input.get(j));
                 input.set(j, temp);
             }
-            if (iCondition && i < j) i += 1;
-            if (jCondition && i < j) j -= 1;
+            if (iCondition && i < j) i++;
+            if (jCondition && i < j) j--;
         }
         //choosing where should go the element where the pointers have met
         if (!jCondition) {
@@ -167,27 +172,6 @@ public class JavaTasks {
      */
 
     /*
-    * trying some simple sort: insertion, for example
-    * IMHO, it's quite the good decision, because on every reading iteration we can do the main insertion sort part:
-    * compare current record with the other records. Yes, it is still O(N^2), but due to the fact that we set every
-    * record on its place in the array instead of filling the array and then - sorting, it should be quite efficient.
-    * thinking about the structure like this:
-    * all
-    * |-street1
-    * | |-№1
-    * | | |-surname1
-    * | | | |-name1
-    * | | | |-name2
-    * | | |-surname2
-    * | | | |-name1
-    * ...
-    *
-    * the memory efficiency will be higher(in the best case: O(3+0.25N) if we will take the name as the 1/4 of
-    * all the data in the record),also, no additional formatting will be required while writing,
-     * but the code will be quite messed up, like:
-    * ArrayList<Pair<Street, ArrayList<Pair<Number, ArrayList<Pair<Surname, ArrayList<Names>>>>>>>,
-    * and working with all these pairs is too sad :c
-    *
     * Complexity: O(N) reading * O(N) comparing + O(N) writing -> total: O(N^2)
     * amount of operations(worst case) for the elements ->
     * 2(write to input + write to output - 1st el) + 2(compare + write to input + write to output- 2nd el) + ... + N+1
@@ -321,70 +305,56 @@ public class JavaTasks {
      */
 
     /*quickSort time!
-    * Complexity: O(N) - reading, O(NlogN) - sorting, O(N) - writing
-    * total -> O(N*logN), base of log(N) depends on the chosen median element
+    * Complexity: O(N) - reading, O(N) - sorting positive, O(N) - sorting negative, O(N) - writing
+    * total -> O(N), base of log(N) depends on the chosen median element
     *
-    * Memory: O(N) - reading, O(logN) - recursion needs - log base depends on the median element chosen, O(1) - writing
+    * Memory: O(N) - reading(positive and negative arrays hold together N elements),
+    * O(N) - for positive and negative arrays,
+    * O(1) - writing
     * Total -> O(N) memory
     */
 
-    private static void temperatureQuickSort(ArrayList<Double> input, int i, int j) {
-        if (i == j || input.isEmpty()) return;
-        System.out.println("got input sized " + input.size() + ", i = " + i + ", j = " + j);
-        for (int c = i; c <= j; c++) System.out.println(input.get(c));
-        int start = i;
-        int end = j;
-        double median = input.get(start); //(trying our luck) taking the median element from the array
-        boolean iCondition = input.get(i) < median;
-        boolean jCondition = input.get(j) > median;
-        while (j - i > 0) { //until the "i" and "j" pointers will meet
-            iCondition = input.get(i) < median;
-            jCondition = input.get(j) > median;
-            if (!iCondition && !jCondition) { //found proper pair to swap, swapping
-                if (input.get(i).equals(input.get(j))) { //avoiding endless loops with changing the same elements
-                    i += 1;
-                    continue;
-                }
-                Double temp = input.get(i);
-                input.set(i, input.get(j));
-                input.set(j, temp);
-            }
-            if (iCondition && i < j) i += 1;
-            if (jCondition && i < j) j -= 1;
-        }
-        //choosing where should go the element where the pointers have met
-        if (!jCondition) {
-            temperatureQuickSort(input, start, i - 1);
-            temperatureQuickSort(input, i, end);
-        }
-        else {
-            temperatureQuickSort(input, start, i);
-            temperatureQuickSort(input, i + 1, end);
-        }
-    }
-
     static public void sortTemperatures(String inputName, String outputName) {
-        ArrayList<Double> input = new ArrayList<>();
+        ArrayList<Integer> positive = new ArrayList<>(); //and zeros
+        ArrayList<Integer> negative = new ArrayList<>();
+        int[] posArr = new int[0];
+        int[] negArr = new int[0];
         //reading part
         try(BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
 
             buffIn.lines().forEach(str -> {
                 if (!str.matches("-?[0-9]+\\.[0-9]")) //format: [-]xxxxx.x
                     throw new IllegalArgumentException("oops, incorrect input format for " + str);
-                input.add(Double.parseDouble(str));
+                int currInt = (int) (Double.parseDouble(str)*10.0);
+                System.out.println(currInt);
+                //now we have doubles as integers with the saved decimal part
+                if (currInt < 0.0) negative.add(abs(currInt));
+                else positive.add(currInt);
             });
-
         } catch (IOException e) {
             System.out.println("Oops, looks like the input file can not be accessed");
         }
 
-        temperatureQuickSort(input, 0, input.size() - 1);
+        if (!positive.isEmpty()) {
+            int maxPos = Collections.max(positive);
+            posArr = countingSort(positive.stream().mapToInt(i -> i).toArray(), maxPos);
+        }
+        if (!negative.isEmpty()) {
+            int maxNeg = Collections.max(negative);
+            negArr = countingSort(negative.stream().mapToInt(i -> i).toArray(), maxNeg);
+        }
 
         //writing part
         try(BufferedWriter buffOut = new BufferedWriter(new FileWriter(outputName))) {
 
-            for(Double number : input) {
-                buffOut.write(number.toString());
+            for(int i = negArr.length - 1; i >= 0; i--) {
+                buffOut.write("-" + (negArr[i] / 10.0)); //converting Int -> Double -> String
+                System.out.println("-" + (negArr[i] / 10.0));
+                buffOut.newLine();
+            }
+            for (int aPosArr : posArr) {
+                buffOut.write("" + (aPosArr / 10.0)); //converting Int -> Double -> String
+                System.out.println("" + (aPosArr / 10.0));
                 buffOut.newLine();
             }
 

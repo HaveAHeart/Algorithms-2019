@@ -211,6 +211,7 @@ public class SortsTest {
         Path out = Paths.get("test", "lesson1", "time_out_test.txt");
         sortTimes(in.toString(), tmp.toString());
         assertTrue(fileEqualityTest(tmp, out));
+
     }
 
     @Test
@@ -250,6 +251,8 @@ public class SortsTest {
         out = Paths.get("test", "lesson1", "tempOut1.txt");
         sortTemperatures(in.toString(), tmp.toString()); //duplicating elements case testing
         assertTrue(fileEqualityTest(tmp, out));
+
+
 
         Path finalIn = Paths.get("test", "lesson1", "tempIn2.txt"); //incorrect format case testing
         assertThrows(IllegalArgumentException.class, () -> sortTemperatures(finalIn.toString(), tmp.toString()));
