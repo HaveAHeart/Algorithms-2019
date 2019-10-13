@@ -275,7 +275,7 @@ public class JavaAlgorithms {
 
     static public Set<String> baldaSearcher(String inputName, Set<String> words) {
         ArrayList<String[]> field = new ArrayList<>();
-        HashSet<String> result = new HashSet<>();
+        Set<String> result = new HashSet<>();
         //reading part
         try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
             buffIn.lines().forEach(str -> {

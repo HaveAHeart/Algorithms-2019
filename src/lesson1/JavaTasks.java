@@ -174,7 +174,7 @@ public class JavaTasks {
     /*
     * Complexity: O(N) reading * O(N) comparing + O(N) writing -> total: O(N^2)
     * amount of operations(worst case) for the elements ->
-    * 2(write to input + write to output - 1st el) + 2(compare + write to input + write to output- 2nd el) + ... + N+1
+    * 2(write to input + write to output - 1st el) + 3(compare + write to input + write to output- 2nd el) + ... + N+1
     * sum(2, 3, ..., N+1) = ((3 + N)/2)*N = (3N + N^2)/2 -> O(N^2) complexity
     *
     * Memory: O(N) for the input data * O(const) for the temporary data(record, added, etc.),
