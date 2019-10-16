@@ -1,12 +1,10 @@
 package lesson1;
 
 import kotlin.NotImplementedError;
-import kotlin.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 import static java.lang.Math.abs;
 import static lesson1.Sorts.countingSort;
@@ -45,103 +43,57 @@ public class JavaTasks {
      */
 
     /*
-    *trying some complex sorting algorithm -> quick sort
+    *inventing the bicycle in the previous attempts was surely not the best idea :c
     *
-    *Complexity: O(N)(reading) + O(N*log(N))quickSort + O(N) (writing) = O(N * log(N)) - if we will be
-    *lucky enough to get the median value, then it will be nearer to O(Nlog2(N)). In the worst case quickSort will give
-    * us O(N^2) difficulty(if the recursion depth will be N).
+    *Complexity: O(N) reading, O(N*log(N)) mergesort(Collections.sort()), O(N) writing, -> total O(N * log(N))
     *
-    * Memory: O(const) for every element in timeToInt(),
-    * O(logN) for the quick sort (recursion depth is logN, and for every instance the memory required is O(const))
-    * O(N) for the input data
-    * total: O(N) of the input data, O(logN) (average for quick sort) for every recursion instance give us O(N).
+    * Memory: O(const) for every Time object + N time objects in input -> O(N) for the input data,
+    * O(N) for the mergesort, O(const) for writing, -> total O(N)
     */
 
-    //returns time in seconds
-    static int timeToInt(String time) {
-        if (!time.matches("0[1-9]:[0-5][0-9]:[0-5][0-9]\\s[AP]M") &&
-        !time.matches("1[0-2]:[0-5][0-9]:[0-5][0-9]\\s[AP]M")) {
-            /*
-            * input data format:
-            * should be formatted as xx:xx:xx AM / xx:xx:xx PM
-            * no cases with 00 hours (00:xx:xx AM / 00:xx:xx PM) should be met
-            * hours [1-12], minutes [0-59], seconds [0-59], [AM-PM]
-            */
-            throw new IllegalArgumentException("illegal format: " + time);
-        }
-        int result;
-        String[] arr = time.split(" ")[0].split(":");
+    private static class Time implements Comparable{
+        int seconds;
+        String textTime;
+        Time(String str) {
+            if (!str.matches("0[1-9]:[0-5][0-9]:[0-5][0-9]\\s[AP]M") &&
+                    !str.matches("1[0-2]:[0-5][0-9]:[0-5][0-9]\\s[AP]M"))
+                throw new IllegalArgumentException("illegal format: " + str);
 
-        //getting result time in seconds: (hours*60 + minutes) * 60 + seconds
-        result = (Integer.parseInt(arr[0])*60 + Integer.parseInt(arr[1])) * 60 + Integer.parseInt(arr[2]);
-        final int twelveHours = 43200;
+            textTime = str;
+            String[] arr = str.split(" ")[0].split(":");
+            seconds = (Integer.parseInt(arr[0])*60 + Integer.parseInt(arr[1])) * 60 + Integer.parseInt(arr[2]);
+            final int twelveHours = 43200;
+            if (seconds >= twelveHours && str.charAt(9) == 'A') seconds %= twelveHours; //12:xx:xx AM -> 00:xx:xx
+            else if (seconds < twelveHours && str.charAt(9) == 'P') seconds += twelveHours; //12:xx:xx PM -> 12:xx:xx
+        }
 
-        if (time.charAt(9) == 'A') {
-            //interval 12:00:00 AM - 12:59:59 AM equal to 00:00:00 - 00:59:59
-            if (result >= twelveHours) return result % twelveHours; //12:00:00 AM -> 00:00:00
-            else return result;
+        @Override
+        public int compareTo(@NotNull Object o) {
+            Time other = (Time) o;
+            return this.seconds - other.seconds;
         }
-        else {
-            //interval 12:00:00 PM - 12:59:59 PM equal to 12:00:00 - 12:59:59
-            if (result >= twelveHours) return result; //12:00:00 PM -> 12:00:00
-            else return result + twelveHours; //adding 12 hours for the [1-11]:xx:xx PM (12) -> [13-23]:xx:xx (24)
-        }
+
+        @Override
+        public String toString() { return textTime; }
     }
 
-    static void timeQuickSort(ArrayList<String> input, int i, int j) {
-        if (i == j || input.isEmpty()) return;
-        System.out.println("got input sized " + input.size() + ", i = " + i + ", j = " + j);
-        for (int c = i; c <= j; c++) System.out.println(input.get(c));
-        int start = i;
-        int end = j;
-        int median = timeToInt(input.get(start)); //(trying our luck) taking the median element from the array
-        boolean iCondition = timeToInt(input.get(i)) < median;
-        boolean jCondition = timeToInt(input.get(j)) > median;
-        while (j - i > 0) { //until the "i" and "j" pointers will meet
-            iCondition = timeToInt(input.get(i)) < median;
-            jCondition = timeToInt(input.get(j)) > median;
-            if (!iCondition && !jCondition) { //found proper pair to swap, swapping
-                if (input.get(i).equals(input.get(j))) { //avoiding endless loops with changing the same elements
-                    i += 1;
-                    continue;
-                }
-                String temp = input.get(i);
-                input.set(i, input.get(j));
-                input.set(j, temp);
-            }
-            if (iCondition && i < j) i++;
-            if (jCondition && i < j) j--;
-        }
-        //choosing where should go the element where the pointers have met
-        if (!jCondition) {
-            timeQuickSort(input, start, i - 1);
-            timeQuickSort(input, i, end);
-        }
-        else {
-            timeQuickSort(input, start, i);
-            timeQuickSort(input, i + 1, end);
-        }
-    }
-
-    //Note - taking 12:00:00 AM (12) as 0:00:00 (24), and 12:00:00 PM (12) as 12:00:00 (24)
+    //Note - taking 12:xx:xx AM (12) as 0:xx:xx (24), and 12:xx:xx PM (12) as 12:xx:xx (24)
     static public void sortTimes(String inputName, String outputName) {
         //reading part
-        ArrayList<String> input = new ArrayList<>();
+        ArrayList<Time> input = new ArrayList<>();
         try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
-            buffIn.lines().forEach(input::add);
-            timeQuickSort(input, 0, input.size() - 1);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Input file name argument is illegal");
-        }
+            buffIn.lines().forEach(str -> input.add(new Time(str)));
+        } catch (IOException e) { throw new IllegalArgumentException("Input file name argument is illegal"); }
+
+        Collections.sort(input);
+
         //writing part
         try (BufferedWriter buffOut = new BufferedWriter(new FileWriter(outputName))) {
-            for (String str : input) {
-                buffOut.write(str);
+            for (Time time : input) {
+                buffOut.write(time.toString());
                 buffOut.newLine();
             }
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Output file name argument is illegal");
-        }
+        } catch (IOException e) { throw new IllegalArgumentException("Output file name argument is illegal"); }
     }
 
     /**
@@ -172,108 +124,61 @@ public class JavaTasks {
      */
 
     /*
-    * Complexity: O(N) reading * O(N) comparing + O(N) writing -> total: O(N^2)
-    * amount of operations(worst case) for the elements ->
-    * 2(write to input + write to output - 1st el) + 3(compare + write to input + write to output- 2nd el) + ... + N+1
-    * sum(2, 3, ..., N+1) = ((3 + N)/2)*N = (3N + N^2)/2 -> O(N^2) complexity
+    * Complexity: N elements * logN complexity for every single element -> O(NlogN) for reading+sorting,
+    * O(N) for writing, -> total O(NlogN) complexity
     *
     * Memory: O(N) for the input data * O(const) for the temporary data(record, added, etc.),
-    * O(N) in the worst case for writing(if all the people will live in the same building)
-    * -> total O(N) memory
+    * O(N) for input.keySet for writing, -> total O(N) memory
     */
 
+    private static class Address implements Comparable {
+        String street;
+        int number;
 
+        private Address(String fullAddress) {
+            String[] addrRecord = fullAddress.split(" ");
+            street = addrRecord[0];
+            number = Integer.parseInt(addrRecord[1]);
+        }
+
+        @Override
+        public int compareTo(@NotNull Object o) {
+            Address other = (Address) o;
+            if (this.street.compareTo(other.street) < 0) return -1;
+            if (this.street.compareTo(other.street) > 0) return 1;
+            return this.number - other.number;
+        }
+
+        @Override
+        public String toString() { return street + " " + number; }
+    }
     static public void sortAddresses(String inputName, String outputName) {
         //reading part
-        ArrayList<String[]> input = new ArrayList<>();
+        Map<Address, TreeSet<String>> input = new TreeMap<>();
+
         try (BufferedReader buffIn = new BufferedReader(new FileReader(inputName))) {
             buffIn.lines().forEach(str -> {
-                //format: Surname Name - Street number
-                if (!str.matches("[А-ЯЁа-яё\\-]*\\s[А-ЯЁа-яё\\-]*\\s-\\s[А-ЯЁа-яё\\-]*\\s[1-9][0-9]*"))
+                String regex = "[А-ЯЁа-яёA-Za-z\\-]+\\s[А-ЯЁа-яёA-Za-z\\-]+\\s-\\s[А-ЯЁа-яёA-Za-z\\-]+\\s[1-9][0-9]*";
+                if (!str.matches(regex))
                     throw new IllegalArgumentException("oops, input format is broken for: " + str);
 
-                //for every record - array: [Surname, Name, Street, number]
-                String[] record = str.split("\\s-?\\s?");
-                boolean added = false;
-                for(int i = 0; i < input.size(); i++) {
-                    //it is better to place all the comparisons before the if|else part, or the code will be messy
-                    int streetComp = record[2].compareTo(input.get(i)[2]); //street comparison
-                    int numComp = Integer.parseInt(record[3]) - Integer.parseInt(input.get(i)[3]); //number comparison
-                    int surnameComp = record[0].compareTo(input.get(i)[0]); //surname comparison
-                    int nameComp = record[1].compareTo(input.get(i)[1]); //name comparison
-
-                    if(streetComp < 0) { //street
-                        input.add(i, record);
-                        added = true;
-                        break;
-                    }
-                    else if (numComp < 0 && streetComp == 0) { //number of house
-                        System.out.println("Number " + record[3] + "lower then " + input.get(i)[3]);
-                        input.add(i, record);
-                        added = true;
-                        break;
-                    }
-                    else if(surnameComp < 0 && streetComp == 0 && numComp == 0) { //surname
-                        System.out.println("Surname " + record[0] + "lower then " + input.get(i)[0]);
-                        input.add(i, record);
-                        added = true;
-                        break;
-                    }
-                    else if(nameComp < 0 && streetComp == 0  && numComp == 0 && surnameComp == 0) { //name
-                        System.out.println("Name " + record[1] + "lower then " + input.get(i)[1]);
-                        input.add(i, record);
-                        added = true;
-                        break;
-                    }
-                    else if(Arrays.equals(record, input.get(i))) { //if the record are the same
-                        System.out.println("Record " + String.join(",", record) +
-                                "equal to " + String.join(",", input.get(i)));
-                        input.add(i, record);
-                        added = true;
-                        break;
-                    }
-                }
-                //if the record was not added, that means it should be added to the end of the array
-                if (!added) input.add(record);
+                String[] record = str.split("\\s-\\s");
+                input.computeIfAbsent(new Address(record[1]), k -> new TreeSet<>()).add(record[0]);
+                //System.out.println("for " + record[1] + " list is " + input.get(record[1]).toString());
             });
-            input.forEach(str -> System.out.println(String.join(";" ,str)));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Input file name argument is illegal");
-        }
+
+        } catch (IOException e) {throw new IllegalArgumentException("Input file name argument is illegal"); }
+
         //writing part
-        //no worries for the order of records - everything was already sorted in the reading part,
-        //all we do here is formatting+writing
         try (BufferedWriter buffOut = new BufferedWriter(new FileWriter(outputName))) {
-
-            String streetAndNumber = "";
-            ArrayList<String> surnameAndName = new ArrayList<>();
-
-            for (String[] record : input) {
-                //if street+number are same for the previous record - just add surname/name
-                if ((record[2] + " " + record[3]).equals(streetAndNumber))
-                    surnameAndName.add(record[0] + " " + record[1]);
-                //else - write current buffer and fill it with new street+number
-                else {
-                    if (!streetAndNumber.isEmpty()) { //condition for getting rid of the 1st blank line
-                        buffOut.write(streetAndNumber + " - " + String.join(", ", surnameAndName));
-                        buffOut.newLine();
-                    }
-                    streetAndNumber = record[2] + " " + record[3];
-                    surnameAndName.clear();
-                    surnameAndName.add(record[0] + " " + record[1]);
-                }
+            for (Address address : input.keySet()) {
+                buffOut.write(address.toString() + " - " + String.join(", ", input.get(address)));
+                buffOut.newLine();
             }
-            //out of loop to get rid of the empty line at the end
-            if (!streetAndNumber.isEmpty())
-                buffOut.write(streetAndNumber + " - " + String.join(", ", surnameAndName));
-
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Output file name argument is illegal");
-        }
-
+        } catch (IOException e) { throw new IllegalArgumentException("Output file name argument is illegal"); }
     }
 
-    /**
+        /**
      * Сортировка температур
      *
      * Средняя
@@ -304,9 +209,9 @@ public class JavaTasks {
      * 121.3
      */
 
-    /*quickSort time!
+    /*countingSort time!
     * Complexity: O(N) - reading, O(N) - sorting positive, O(N) - sorting negative, O(N) - writing
-    * total -> O(N), base of log(N) depends on the chosen median element
+    * total -> O(N)
     *
     * Memory: O(N) - reading(positive and negative arrays hold together N elements),
     * O(N) - for positive and negative arrays,
