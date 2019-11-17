@@ -142,6 +142,125 @@ public class BinTreeTests {
     public static void subSetTests() {
         for (int i = 0; i < 100; i++) singleSubSetTest();
         for (int i = 0; i < 100; i++) singleSubSetIteratorTest();
+
+    }
+
+    private static void singleHeadSetTest() {
+        Set<Integer> comparingSet = new TreeSet<>();
+        BinaryTree<Integer> tree = new BinaryTree<>();
+        Random rand = new Random();
+        System.out.print("\nSet is: ");
+        for (int i = 0; i < 100; i++) {
+            int value = rand.nextInt();
+            comparingSet.add(value);
+            tree.add(value);
+            System.out.print(value + " ");
+        }
+        int toElement = rand.nextInt();
+
+        System.out.print("\nFromElement: " + null + ", toElement: " + toElement);
+        SortedSet<Integer> shortTree = tree.headSet(toElement);
+        ArrayList<Integer> remList = new ArrayList<>();
+        for (Object i : comparingSet) {
+            int iInt = (Integer) i;
+            if (iInt >= toElement) remList.add(iInt);
+        }
+        for (int i : remList) comparingSet.remove(i);
+        System.out.print("\nSubSet size: " + shortTree.size() + "\nRequired size: " + comparingSet.size() +"\n");
+        assertEquals(shortTree.size(), comparingSet.size());
+    }
+
+    private static void singleHeadSetIteratorTest() {
+        int bound = 100;
+        BinaryTree<Integer> tree = new BinaryTree<>();
+        Set<Integer> comparingSet = new TreeSet<>();
+        Random r = new Random();
+        int toElement = r.nextInt(bound);
+        System.out.print("\n" + "fromEl is: " + null + ", toEl is: " + toElement);
+        for (int i = 0; i < 15; i++) {
+            int addVal = r.nextInt(bound);
+            if (addVal < toElement) comparingSet.add(addVal);
+            tree.add(addVal);
+        }
+        System.out.println();
+        System.out.print("Set is: ");
+        for (int i : tree) System.out.print(i + " ");
+        System.out.print("\nExpected set is: ");
+        for (int i : comparingSet) System.out.print(i + " ");
+        System.out.print("\nSubset is: ");
+        SortedSet<Integer> subSet = tree.headSet(toElement);
+        int counter = 0;
+        for (int i : subSet) {
+            System.out.print(i + " ");
+            counter++;
+            assertTrue(comparingSet.contains(i), i + " is in subSet, but should not be there");
+        }
+        System.out.println();
+        assertEquals(counter, comparingSet.size());
+    }
+
+    public static void headSetTests() {
+        for (int i = 0; i < 100; i++) singleHeadSetIteratorTest();
+        for (int i = 0; i < 100; i++) singleHeadSetTest();
+    }
+
+    private static void singleTailSetTest() {
+        Set<Integer> comparingSet = new TreeSet<>();
+        BinaryTree<Integer> tree = new BinaryTree<>();
+        Random rand = new Random();
+        System.out.print("\nSet is: ");
+        for (int i = 0; i < 100; i++) {
+            int value = rand.nextInt();
+            comparingSet.add(value);
+            tree.add(value);
+            System.out.print(value + " ");
+        }
+        int fromElement = rand.nextInt();
+
+        System.out.print("\nFromElement: " + fromElement + ", toElement: " + null);
+        SortedSet<Integer> shortTree = tree.tailSet(fromElement);
+        ArrayList<Integer> remList = new ArrayList<>();
+        for (Object i : comparingSet) {
+            int iInt = (Integer) i;
+            if (iInt < fromElement) remList.add(iInt);
+        }
+        for (int i : remList) comparingSet.remove(i);
+        System.out.print("\nSubSet size: " + shortTree.size() + "\nRequired size: " + comparingSet.size() +"\n");
+        assertEquals(shortTree.size(), comparingSet.size());
+    }
+
+    private static void singleTailSetIteratorTest() {
+        int bound = 100;
+        BinaryTree<Integer> tree = new BinaryTree<>();
+        Set<Integer> comparingSet = new TreeSet<>();
+        Random r = new Random();
+        int fromElement = r.nextInt(bound);
+        System.out.print("\n" + "fromEl is: " + fromElement + ", toEl is: " + null);
+        for (int i = 0; i < 15; i++) {
+            int addVal = r.nextInt(bound);
+            if (addVal >= fromElement) comparingSet.add(addVal);
+            tree.add(addVal);
+        }
+        System.out.println();
+        System.out.print("Set is: ");
+        for (int i : tree) System.out.print(i + " ");
+        System.out.print("\nExpected set is: ");
+        for (int i : comparingSet) System.out.print(i + " ");
+        System.out.print("\nSubset is: ");
+        SortedSet<Integer> subSet = tree.tailSet(fromElement);
+        int counter = 0;
+        for (int i : subSet) {
+            System.out.print(i + " ");
+            counter++;
+            assertTrue(comparingSet.contains(i), i + " is in subSet, but should not be there");
+        }
+        System.out.println();
+        assertEquals(counter, comparingSet.size());
+    }
+
+    public static void tailSetTests() {
+        for(int i = 0; i < 100; i++) singleTailSetIteratorTest();
+        for(int i = 0; i < 100; i++) singleTailSetTest();
     }
 
 }

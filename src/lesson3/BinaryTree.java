@@ -281,14 +281,16 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
             if (fromElement == null && toElement == null) return !buffer.isEmpty();
             //head set case - just getting sure that the next element is lower than toElement
             else if (fromElement == null) {
-                if (!buffer.isEmpty()) {
-                    if (currNode.right != null) {
-                        Node<T> iterNode = currNode.right;
-                        while (iterNode.left != null) iterNode = iterNode.left;
-                        return iterNode.value.compareTo(toElement) < 0;
-                    }
-                    else return buffer.peekLast().value.compareTo(toElement) < 0;
+                if (isInitial) {
+                    isInitial = false;
+                    return currNode.value.compareTo(toElement) < 0;
                 }
+                if (currNode.right != null) {
+                    Node<T> iterNode = currNode.right;
+                    while (iterNode.left != null) iterNode = iterNode.left;
+                    return iterNode.value.compareTo(toElement) < 0;
+                }
+                else if (!buffer.isEmpty()) return buffer.peekLast().value.compareTo(toElement) < 0;
                 else return false;
             }
             //tail set case - all the lower values skip logic is in Next(), but we still need to be sure that there will
@@ -365,7 +367,6 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
                         iterNode = iterNode.left;
                     }
                 }
-
                 return res;
             }
         }
