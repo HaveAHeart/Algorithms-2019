@@ -259,7 +259,8 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
                 buffer.add(iterNode);
                 iterNode = iterNode.left;
             }
-            maxVal = last();
+            if (root != null) maxVal = last();
+            else maxVal = null;
             currNode = buffer.peekLast();
             isInitial = true;
             lastUsed = false;
