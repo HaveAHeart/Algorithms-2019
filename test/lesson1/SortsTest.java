@@ -151,8 +151,6 @@ public class SortsTest {
 
     @Test
     public void testSortTimes() {
-        //Too lazy, taking the input/output data from the last test :c
-        //TODO: fix the stuff with the test file access
         Path tmp = Paths.get("test", "lesson1", "tmp.txt");
 
         Path in = Paths.get("test", "lesson1", "time_in_test.txt");

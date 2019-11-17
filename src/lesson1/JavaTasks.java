@@ -52,19 +52,19 @@ public class JavaTasks {
     */
 
     private static class Time implements Comparable{
-        int seconds;
         String textTime;
+        int seconds;
         Time(String str) {
             if (!str.matches("0[1-9]:[0-5][0-9]:[0-5][0-9]\\s[AP]M") &&
                     !str.matches("1[0-2]:[0-5][0-9]:[0-5][0-9]\\s[AP]M"))
                 throw new IllegalArgumentException("illegal format: " + str);
-
             textTime = str;
-            String[] arr = str.split(" ")[0].split(":");
-            seconds = (Integer.parseInt(arr[0])*60 + Integer.parseInt(arr[1])) * 60 + Integer.parseInt(arr[2]);
+            String[] arr = textTime.split(" ")[0].split(":");
+            seconds = (Integer.parseInt(arr[0]) * 60 + Integer.parseInt(arr[1])) * 60 + Integer.parseInt(arr[2]);
             final int twelveHours = 43200;
-            if (seconds >= twelveHours && str.charAt(9) == 'A') seconds %= twelveHours; //12:xx:xx AM -> 00:xx:xx
-            else if (seconds < twelveHours && str.charAt(9) == 'P') seconds += twelveHours; //12:xx:xx PM -> 12:xx:xx
+            if (textTime.charAt(9) == 'A' && seconds >= twelveHours) seconds %= twelveHours;
+            else if (textTime.charAt(9) == 'P' && seconds < twelveHours) seconds += twelveHours;
+
         }
 
         @Override
@@ -77,7 +77,7 @@ public class JavaTasks {
         public String toString() { return textTime; }
     }
 
-    //Note - taking 12:xx:xx AM (12) as 0:xx:xx (24), and 12:xx:xx PM (12) as 12:xx:xx (24)
+    //Note - taking 12:xx:xx AM (12) as 00:xx:xx (24), and 12:xx:xx PM (12) as 12:xx:xx (24)
     static public void sortTimes(String inputName, String outputName) {
         //reading part
         ArrayList<Time> input = new ArrayList<>();
