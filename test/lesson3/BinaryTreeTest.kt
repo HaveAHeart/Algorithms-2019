@@ -94,6 +94,7 @@ class BinaryTreeTest {
     @Tag("Normal")
     fun testRemoveJava() {
         testRemove { createJavaTree() }
+        BinTreeTests.removalTests()
     }
 
     private fun testIterator(create: () -> CheckableSortedSet<Int>) {
@@ -139,6 +140,7 @@ class BinaryTreeTest {
     @Tag("Normal")
     fun testIteratorJava() {
         testIterator { createJavaTree() }
+        BinTreeTests.BTIteratorTests()
     }
 
     private fun testIteratorRemove(create: () -> CheckableSortedSet<Int>) {
@@ -196,5 +198,12 @@ class BinaryTreeTest {
     @Tag("Hard")
     fun testIteratorRemoveJava() {
         testIteratorRemove { createJavaTree() }
+    }
+
+    @Test
+    @Tag("Custom")
+    fun customTests() {
+        BinTreeTests.checkRangeTests()
+        BinTreeTests.sizeTests()
     }
 }

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BinTreeTests {
 
     @Test
-    public void removalTests() {
+    public static void removalTests() {
         BinaryTree<Integer> testTree = new BinaryTree<>();
         assertFalse(testTree.remove(2));
         testTree.add(2);
@@ -23,7 +23,7 @@ public class BinTreeTests {
     }
 
     @Test
-    public void checkRangeTests() {
+    public static void checkRangeTests() {
         BinaryTree<String> tree = new BinaryTree<>();
         assertTrue(tree.checkRange("abc"));
         tree = new BinaryTree<>("aa", null);
@@ -38,7 +38,7 @@ public class BinTreeTests {
     }
 
     @Test
-    public void sizeTests() {
+    public static void sizeTests() {
         BinaryTree<Integer> tree = new BinaryTree<>();
         for (int i = 0; i < 10; i++) tree.add(i);
         assertEquals(10, tree.size());
@@ -48,7 +48,7 @@ public class BinTreeTests {
         assertEquals(2, tree.size());
     }
 
-    private void singleBTIteratorTest() {
+    private static void singleBTIteratorTest() {
         Set comparingSet = new TreeSet();
         BinaryTree<Integer> tree = new BinaryTree<>();
         Random rand = new Random();
@@ -71,9 +71,9 @@ public class BinTreeTests {
     }
 
     @Test
-    public void BTIteratorTests() { for (int i = 0; i < 100; i++) singleBTIteratorTest(); }
+    public static void BTIteratorTests() { for (int i = 0; i < 100; i++) singleBTIteratorTest(); }
 
-    private void singleSubSetTest() {
+    private static void singleSubSetTest() {
         Set<Integer> comparingSet = new TreeSet<>();
         BinaryTree<Integer> tree = new BinaryTree<>();
         Random rand = new Random();
@@ -103,7 +103,7 @@ public class BinTreeTests {
         assertEquals(shortTree.size(), comparingSet.size());
     }
 
-    private void singleSubSetIteratorTest() {
+    private static void singleSubSetIteratorTest() {
         int bound = 100;
         BinaryTree<Integer> tree = new BinaryTree<>();
         Set<Integer> comparingSet = new TreeSet<>();
@@ -139,7 +139,7 @@ public class BinTreeTests {
 
     @Test
     @Tag("Impossible")
-    public void subSetTests() {
+    public static void subSetTests() {
         for (int i = 0; i < 100; i++) singleSubSetTest();
         for (int i = 0; i < 100; i++) singleSubSetIteratorTest();
     }

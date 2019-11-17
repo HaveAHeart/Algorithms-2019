@@ -40,5 +40,6 @@ class JavaHeadSetTest : AbstractHeadTailTest() {
     fun subSetTest() {
         doSubSetTest()
         doSubSetRelationTest()
+        BinTreeTests.subSetTests()
     }
 }
