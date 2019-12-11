@@ -30,6 +30,7 @@ abstract class AbstractGraphTests {
 
     fun findEulerLoop(findEulerLoop: Graph.() -> List<Graph.Edge>) {
         val emptyGraph = GraphBuilder().build()
+
         val emptyLoop = emptyGraph.findEulerLoop()
         assertTrue(emptyLoop.isEmpty(), "Euler loop should be empty for the empty graph")
         val simpleGraph = GraphBuilder().apply {
@@ -39,6 +40,7 @@ abstract class AbstractGraphTests {
         }.build()
         val simpleLoop = simpleGraph.findEulerLoop()
         simpleLoop.assert(shouldExist = false, graph = simpleGraph)
+
         val unconnected = GraphBuilder().apply {
             val a = addVertex("A")
             val b = addVertex("B")
@@ -49,6 +51,7 @@ abstract class AbstractGraphTests {
         }.build()
         val unconnectedLoop = unconnected.findEulerLoop()
         unconnectedLoop.assert(shouldExist = false, graph = unconnected)
+
         val graph = GraphBuilder().apply {
             val a = addVertex("A")
             val b = addVertex("B")
@@ -59,6 +62,7 @@ abstract class AbstractGraphTests {
         }.build()
         val loop = graph.findEulerLoop()
         loop.assert(shouldExist = true, graph = graph)
+
         val graph2 = GraphBuilder().apply {
             val a = addVertex("A")
             val b = addVertex("B")
@@ -87,6 +91,7 @@ abstract class AbstractGraphTests {
         }.build()
         val loop2 = graph2.findEulerLoop()
         loop2.assert(shouldExist = true, graph = graph2)
+
         // Seven bridges of Koenigsberg
         //    A1 -- A2 ---
         //    |      |    |
@@ -114,6 +119,31 @@ abstract class AbstractGraphTests {
         }.build()
         val loop3 = graph3.findEulerLoop()
         loop3.assert(shouldExist = false, graph = graph3)
+
+        // Two Euler loops in the separated graph
+        // A -- B    A1 -- B1
+        // |    |    |     |
+        // C -- D    C1 -- D1
+        val separatedLoopsGraph = GraphBuilder().apply {
+            val a = addVertex("A")
+            val a1 = addVertex("A1")
+            val b = addVertex("B")
+            val b1 = addVertex("B1")
+            val c = addVertex("C")
+            val c1 = addVertex("C1")
+            val d = addVertex("D")
+            val d1 = addVertex("D1")
+            addConnection(a, b)
+            addConnection(a, c)
+            addConnection(d, b)
+            addConnection(d, c)
+            addConnection(a1, b1)
+            addConnection(a1, c1)
+            addConnection(d1, b1)
+            addConnection(d1, c1)
+        }.build()
+        val sepLoop = separatedLoopsGraph.findEulerLoop()
+        sepLoop.assert(shouldExist = false, graph = separatedLoopsGraph)
     }
 
     fun minimumSpanningTree(minimumSpanningTree: Graph.() -> Graph) {
@@ -247,6 +277,15 @@ abstract class AbstractGraphTests {
     fun longestSimplePath(longestSimplePath: Graph.() -> Path) {
         val emptyGraph = GraphBuilder().build()
         assertEquals(0, emptyGraph.longestSimplePath().length)
+
+        val isolatedVerticesGraph = GraphBuilder().apply {
+            val a = addVertex("A")
+            val b = addVertex("B")
+            val c = addVertex("C")
+            val d = addVertex("D")
+        }.build()
+        val isolatedVerticesPath = isolatedVerticesGraph.longestSimplePath()
+        assertEquals(0, isolatedVerticesPath.length)
 
         val unconnected = GraphBuilder().apply {
             val a = addVertex("A")

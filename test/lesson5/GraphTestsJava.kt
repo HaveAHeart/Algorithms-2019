@@ -27,5 +27,4 @@ class GraphTestsJava : AbstractGraphTests() {
     fun testLongestSimplePath() {
         longestSimplePath { let { JavaGraphTasks.longestSimplePath(it) } }
     }
-
 }
