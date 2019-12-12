@@ -272,6 +272,19 @@ abstract class AbstractGraphTests {
             setOf(cross["A"], cross["B"], cross["C"], cross["D"]),
             cross.largestIndependentVertexSet()
         )
+
+        //all the vertices are not connected
+        val isolated = GraphBuilder().apply {
+            val a = addVertex("A")
+            val b = addVertex("B")
+            val c = addVertex("C")
+            val d = addVertex("D")
+            val e = addVertex("E")
+        }.build()
+        assertEquals(
+            setOf(isolated["A"], isolated["B"], isolated["C"], isolated["D"], isolated["E"]),
+            isolated.largestIndependentVertexSet()
+        )
     }
 
     fun longestSimplePath(longestSimplePath: Graph.() -> Path) {

@@ -198,8 +198,57 @@ public class JavaGraphTasks {
      *
      * Эта задача может быть зачтена за пятый и шестой урок одновременно
      */
+
+    //found the algo by googling:
+    //graph without the cycles can be treated as a tree, so, we can just bfs it with splitting the result
+    //in two collections(odd and even height), and then we need to compare which one is bigger
+
+
+    //findPossibleResult complexity: O(v+e), mostly, it is a bfs
+    //memory: O(v-1) => O(v) the worst case: if all the vertices will be connected with the initial vertex
+    //we'll have a queue of O(v-1) and, in the end, oddVertices set of O(v-1)
+    private static Set<Graph.Vertex> findPossibleResult(Graph.Vertex v, Set<Graph.Vertex> checked, Graph graph) {
+        Set<Graph.Vertex> oddVertices = new HashSet<>();
+        Set<Graph.Vertex> evenVertices = new HashSet<>();
+        Deque<Pair<Graph.Vertex, Boolean>> queue = new ArrayDeque<>();
+        queue.addLast(new Pair<>(v, true)); //we'll add initial element with a treated height of 1 -> odd height
+
+        while (!queue.isEmpty()) {
+            Pair<Graph.Vertex, Boolean> currPair = queue.pollFirst();
+            Graph.Vertex currVertex = currPair.getKey();
+            boolean isOdd = currPair.getValue();
+            checked.add(currVertex);
+
+            if (isOdd) oddVertices.add(currVertex);
+            else evenVertices.add(currVertex);
+
+            for (Graph.Vertex neighbour : graph.getNeighbors(currVertex)) {
+                if (!checked.contains(neighbour)) queue.addLast(new Pair<>(neighbour, !isOdd));
+            }
+        }
+
+        if (oddVertices.size() >= evenVertices.size()) return oddVertices;
+        else return evenVertices;
+    }
+
+    //Complexity: O((v+e)*v) due to checking every vertex for the cycles(-> dfs for every vertex)
+    //Memory: O(v) due to the checked set usage
     public static Set<Graph.Vertex> largestIndependentVertexSet(Graph graph) {
-        throw new NotImplementedError();
+
+        if (graph.getVertices().isEmpty()) return new HashSet<>();
+        for (Graph.Vertex v : graph.getVertices()) {
+            if (findCycle(v, graph, new HashSet<>()) != null)
+                throw new IllegalArgumentException("cycle found for vertex " + v.getName());
+        }
+
+        Set<Graph.Vertex> checked = new HashSet<>();
+        Set<Graph.Vertex> result = new HashSet<>();
+
+        for (Graph.Vertex v : graph.getVertices()) {
+            if (!checked.contains(v)) result.addAll(findPossibleResult(v, checked, graph));
+        }
+        return result;
+
     }
 
     /**
@@ -222,7 +271,6 @@ public class JavaGraphTasks {
      *
      * Ответ: A, E, J, K, D, C, H, G, B, F, I
      */
-
 
     private static Path simpleLongestPathForVertex(Graph.Vertex vertex, Graph graph) {
 
